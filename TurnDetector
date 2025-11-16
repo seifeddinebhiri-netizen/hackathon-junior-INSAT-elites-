@@ -52,58 +52,62 @@ class TurnDatabase:
 
 class TurnDetector:
     def __init__(self, turn_threshold_deg=5):
-        self.prev_bearing = None 
-        self.prev_point=None
+        self.prev_bearing = None
+        self.prev_point = None
         self.turn_threshold = turn_threshold_deg
         self.current_turn_points = []
+        self.in_turn = False  # are we currently inside a turn?
 
     def compute_bearing(self, lat1, lon1, lat2, lon2):
-        """Compute bearing between two GPS points."""
+        """Compute bearing between two GPS points in degrees [0, 360)."""
         dLon = np.radians(lon2 - lon1)
-        y = np.sin(dLon) * np.cos(np.radians(lat2))
-        x = (np.cos(np.radians(lat1))*np.sin(np.radians(lat2)) -
-             np.sin(np.radians(lat1))*np.cos(np.radians(lat2))*np.cos(dLon))
+        lat1_rad = np.radians(lat1)
+        lat2_rad = np.radians(lat2)
+
+        y = np.sin(dLon) * np.cos(lat2_rad)
+        x = (np.cos(lat1_rad) * np.sin(lat2_rad) -
+             np.sin(lat1_rad) * np.cos(lat2_rad) * np.cos(dLon))
         bearing = np.degrees(np.arctan2(y, x))
         return (bearing + 360) % 360
 
     def process_point(self, lat, lon, speed):
-    
-        # First GPS point ever
+        """Feed one GPS point. Returns a list of turn points when a turn finishes, else None."""
+        # First GPS point: no bearing yet
         if self.prev_point is None:
             self.prev_point = (lat, lon)
             return None
         
-        # Second GPS point: compute first bearing
+        # Second GPS point: init bearing, still no heading change
         if self.prev_bearing is None:
             self.prev_bearing = self.compute_bearing(
-                self.prev_point[0], self.prev_point[1],
-                lat, lon
+                self.prev_point[0], self.prev_point[1], lat, lon
             )
             self.prev_point = (lat, lon)
             return None
 
-        # Now we have: prev_bearing AND prev_point
+        # Compute current bearing and heading change
         bearing_now = self.compute_bearing(
-            self.prev_point[0], self.prev_point[1],
-            lat, lon
+            self.prev_point[0], self.prev_point[1], lat, lon
         )
- 
         heading_change = abs(bearing_now - self.prev_bearing)
 
-        # Detect turn
+        # We are turning or starting a turn
         if heading_change > self.turn_threshold:
             self.current_turn_points.append((lat, lon, speed))
+            self.in_turn = True
+
+        # Heading change is small: maybe the turn ended
         else:
-            # End of turn
-            if len(self.current_turn_points) > 3:
+            # If we were in a turn and we accumulated enough points → end turn
+            if self.in_turn and len(self.current_turn_points) >= 3:
                 turn = self.current_turn_points.copy()
                 self.current_turn_points = []
-                # update state
+                self.in_turn = False
                 self.prev_bearing = bearing_now
                 self.prev_point = (lat, lon)
                 return turn
 
-        # Update state for next iteration
+        # Update state for next call
         self.prev_bearing = bearing_now
         self.prev_point = (lat, lon)
         return None
@@ -163,41 +167,7 @@ class SmartTurnSpeedSystem:
             return True
 
         return False
-
-'''
-# ==============================
-# EXAMPLE SIMULATION
-# ==============================
-print("=== Testing TurnDatabase ===")
-
-# Create DB
-db = TurnDatabase()
-
-# 1. Add a new turn
-center1 = (36.8065, 10.1819)
-radius1 = 45
-avg_speed1 = 50
-
-curve_id = db.add_new_turn(center1, radius1, avg_speed1)
-print("\nAdded turn with ID:", curve_id)
-print(db.turns[curve_id])
-
-# 2. Search for the same turn (should find it)
-test_center = (36.80652, 10.18192)  # very close to center1
-found = db.find_closest_turn(test_center)
-
-print("\nSearching for closest turn...")
-print("Found:", found)
-
-# 3. Update this turn with new speed data
-new_speeds = [48, 51, 49, 52]
-
-db.update_turn(curve_id, new_speeds)
-print("\nAfter updating turn:")
-print(db.turns[curve_id])
-
-print("\n=== TEST COMPLETE ===")
-'''
+#prototype test 
 if __name__ == "__main__":
     print("=== Testing SmartTurnSpeedSystem ===")
 
