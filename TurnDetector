@@ -1,0 +1,238 @@
+import numpy as np
+from geopy.distance import geodesic
+from shapely.geometry import Point
+from shapely.ops import nearest_points
+import uuid
+
+# ==============================
+# TURN SPEED LEARNING SYSTEM
+# ==============================
+
+class TurnDatabase:
+    def __init__(self):
+        self.turns = {}  # {curve_id: {...}}
+
+    def add_new_turn(self, center, radius, avg_speed):
+        curve_id = str(uuid.uuid4())[:8]
+        self.turns[curve_id] = {
+            "center": center,          # (lat, lon)
+            "radius": radius,
+            "avg_speed": avg_speed,
+            "std_speed": 0,
+            "samples": 1
+        }
+        return curve_id
+
+    def find_closest_turn(self, center, tolerance_m=40):
+        """Match current turn to existing turn by proximity."""
+        if not self.turns:
+            return None
+
+        curr_point = Point(center[1], center[0])  # lon, lat
+
+        for curve_id, t in self.turns.items():
+            #turn_point = Point(t["center"][1], t["center"][0])
+            dist = geodesic(center, t["center"]).meters
+            if dist < tolerance_m:
+                return curve_id
+
+        return None
+
+    def update_turn(self, curve_id, speed_list):
+        t = self.turns[curve_id]
+        new_avg = np.mean(speed_list)
+        
+        # Incremental update
+        old_avg = t["avg_speed"]
+        t["avg_speed"] = (old_avg*t["samples"] + new_avg) / (t["samples"]+1)
+        
+        t["std_speed"] = np.std(speed_list)
+        t["samples"] += 1
+
+
+class TurnDetector:
+    def __init__(self, turn_threshold_deg=5):
+        self.prev_bearing = None 
+        self.prev_point=None
+        self.turn_threshold = turn_threshold_deg
+        self.current_turn_points = []
+
+    def compute_bearing(self, lat1, lon1, lat2, lon2):
+        """Compute bearing between two GPS points."""
+        dLon = np.radians(lon2 - lon1)
+        y = np.sin(dLon) * np.cos(np.radians(lat2))
+        x = (np.cos(np.radians(lat1))*np.sin(np.radians(lat2)) -
+             np.sin(np.radians(lat1))*np.cos(np.radians(lat2))*np.cos(dLon))
+        bearing = np.degrees(np.arctan2(y, x))
+        return (bearing + 360) % 360
+
+    def process_point(self, lat, lon, speed):
+    
+        # First GPS point ever
+        if self.prev_point is None:
+            self.prev_point = (lat, lon)
+            return None
+        
+        # Second GPS point: compute first bearing
+        if self.prev_bearing is None:
+            self.prev_bearing = self.compute_bearing(
+                self.prev_point[0], self.prev_point[1],
+                lat, lon
+            )
+            self.prev_point = (lat, lon)
+            return None
+
+        # Now we have: prev_bearing AND prev_point
+        bearing_now = self.compute_bearing(
+            self.prev_point[0], self.prev_point[1],
+            lat, lon
+        )
+ 
+        heading_change = abs(bearing_now - self.prev_bearing)
+
+        # Detect turn
+        if heading_change > self.turn_threshold:
+            self.current_turn_points.append((lat, lon, speed))
+        else:
+            # End of turn
+            if len(self.current_turn_points) > 3:
+                turn = self.current_turn_points.copy()
+                self.current_turn_points = []
+                # update state
+                self.prev_bearing = bearing_now
+                self.prev_point = (lat, lon)
+                return turn
+
+        # Update state for next iteration
+        self.prev_bearing = bearing_now
+        self.prev_point = (lat, lon)
+        return None
+
+
+
+# ==============================
+# MAIN SMART SYSTEM
+# ==============================
+
+class SmartTurnSpeedSystem:
+    def __init__(self):
+        self.db = TurnDatabase()
+        self.detector = TurnDetector()
+
+    def compute_turn_center(self, turn_points):
+        """Approximate 'center' of the turn."""
+        lats = [p[0] for p in turn_points]
+        lons = [p[1] for p in turn_points]
+        return (np.mean(lats), np.mean(lons))
+
+    def compute_curve_radius(self, turn_points):
+        """Simple radius approximation = average distance to centroid."""
+        center = self.compute_turn_center(turn_points)
+        dists = [geodesic((lat,lon), center).meters for lat,lon,_ in turn_points]
+        return np.mean(dists)
+
+    def process_gps(self, lat, lon, speed):
+        """Feed GPS stream here."""
+        result = self.detector.process_point(lat, lon, speed)
+
+        if result is not None:  # A turn was detected
+            turn_points = result
+            speed_list = [s for _,_,s in turn_points]
+            center = self.compute_turn_center(turn_points)
+            radius = self.compute_curve_radius(turn_points)
+
+            # Identify curve
+            curve_id = self.db.find_closest_turn(center)
+
+            if curve_id is None:
+                curve_id = self.db.add_new_turn(center, radius, np.mean(speed_list))
+                print(f"[NEW TURN] {curve_id} radius={radius:.1f}m avg_speed={np.mean(speed_list):.1f}")
+            else:
+                self.db.update_turn(curve_id, speed_list)
+                print(f"[UPDATE] Turn {curve_id}: new avg={self.db.turns[curve_id]['avg_speed']:.1f}")
+
+            return curve_id
+        return None
+
+    def check_overspeed(self, curve_id, current_speed):
+        t = self.db.turns[curve_id]
+        safe_limit = t["avg_speed"] + 1*t["std_speed"]
+
+        if current_speed > safe_limit:
+            print(f"⚠ OVERSPEED in curve {curve_id}! Current={current_speed:.1f} Safe≈{safe_limit:.1f}")
+            return True
+
+        return False
+
+'''
+# ==============================
+# EXAMPLE SIMULATION
+# ==============================
+print("=== Testing TurnDatabase ===")
+
+# Create DB
+db = TurnDatabase()
+
+# 1. Add a new turn
+center1 = (36.8065, 10.1819)
+radius1 = 45
+avg_speed1 = 50
+
+curve_id = db.add_new_turn(center1, radius1, avg_speed1)
+print("\nAdded turn with ID:", curve_id)
+print(db.turns[curve_id])
+
+# 2. Search for the same turn (should find it)
+test_center = (36.80652, 10.18192)  # very close to center1
+found = db.find_closest_turn(test_center)
+
+print("\nSearching for closest turn...")
+print("Found:", found)
+
+# 3. Update this turn with new speed data
+new_speeds = [48, 51, 49, 52]
+
+db.update_turn(curve_id, new_speeds)
+print("\nAfter updating turn:")
+print(db.turns[curve_id])
+
+print("\n=== TEST COMPLETE ===")
+'''
+if __name__ == "__main__":
+    print("=== Testing SmartTurnSpeedSystem ===")
+
+    system = SmartTurnSpeedSystem()
+
+    # Fake GPS + speed stream simulating a left turn
+    trajectory = [
+    # straight
+    (36.8060, 10.1810, 55),
+    (36.8061, 10.1810, 53),
+    (36.8062, 10.1810, 52),
+
+    # sharp left turn
+    (36.80625, 10.18105, 48),
+    (36.80630, 10.18120, 46),
+    (36.80633, 10.18140, 44),
+    (36.80635, 10.18165, 45),
+
+    # leaving turn
+    (36.80636, 10.18190, 55),
+    ]
+
+    first_curve_id = None
+
+    for (lat, lon, speed) in trajectory:
+        curve_id = system.process_gps(lat, lon, speed)
+
+        # When the turn ends, curve_id will NOT be None
+        if curve_id is not None:
+            print(f"Detected turn with ID {curve_id}")
+            first_curve_id = curve_id
+
+            # Check overspeed
+            system.check_overspeed(curve_id, speed)
+
+    print("\nStored turn data:")
+    print(system.db.turns)
+    print("\n=== TEST COMPLETE ===")
