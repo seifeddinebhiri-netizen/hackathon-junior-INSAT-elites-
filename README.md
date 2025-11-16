@@ -26,7 +26,7 @@ It combines in-cabin sensors (heart rate, face camera, microphone) with driving 
 - An insurer dashboard consumes this data to display KPIs, risk trends, and driver rankings.   
 
 ## Data Sources 
-- Heart rate and vitals from wearable sensors or in-seat sensors (e.g., ECG/PPG modules).   
+- Heart rate and vitals from in-seat sensors (ECG/PPG modules).   
 - Face and eye region from an in-cabin camera for drowsiness, distraction, and emotion detection.  
 - Cabin audio from a microphone for stress and conflict cues and voice alerts.   
 - Driving behavior from telematics and CAN bus (speed, braking, steering, GPS).   
@@ -39,7 +39,7 @@ It combines in-cabin sensors (heart rate, face camera, microphone) with driving 
 
 ## Real-Time Alerts
 - Local alerts in the vehicle (buzzer, audio message) when drowsiness or distraction persists over a set number of frames or seconds.   
-- Escalation logic for repeated high-risk behavior (e.g., multiple speeding episodes or near-crash events).   
+- Escalation logic for repeated high-risk behavior (for example multiple speeding episodes or near-crash events).   
 - Optional connectivity to send critical alerts (collision, suspected intoxication) to an emergency contact or operations center.   
 
 ## Insurance Dashboard 
@@ -52,7 +52,7 @@ It combines in-cabin sensors (heart rate, face camera, microphone) with driving 
 - Backend: Python (Flask), REST APIs. 
 - Models: PyTorch, Yolov8n to run on the Raspberry Pi and MediaPipe models for classical vision. For turn detection used GeoPy and Shapely libraries.
 - Edge: Raspberry Pi, in-vehicle capturing camera, audio, and sensor data.
-- Database: PostgreSQL or TimescaleDB for events and metrics storage.
+- Database: TimescaleDB for events and metrics storage.
 - Dashboard: React.
 
 ## Getting Started
