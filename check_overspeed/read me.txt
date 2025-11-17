@@ -1,0 +1,40 @@
+# Offline Speed Limit Detection System (OSM-Based)
+
+This project provides a **fully offline speed-limit detection module** using
+**OpenStreetMap (.osm.pbf)** data.  
+It takes real-time GPS coordinates and vehicle speed, then determines whether the
+driver is **under or over the legal speed limit** of the road they are currently on.
+
+It uses:
+
+- **OpenStreetMap** as the road and speed-limit database  
+- **Pyrosm** to extract road geometries and maxspeed tags  
+- **Shapely** for geometry handling  
+- **SciPy KDTree** for fast nearest-road lookup  
+- **Numpy / Pandas** for efficient data processing  
+
+The workflow is 100% offline and suitable for embedded or real-time applications.
+
+---
+
+## Features
+
+- Load a local `.osm.pbf` map file (Tunisia, France, Germany, etc.)
+- Extract all road geometries + speed limits (`maxspeed`)
+- Build a high-performance KD-Tree for nearest-road lookup
+- For each GPS sample:
+  - find the nearest road  
+  - read its legal speed limit  
+  - compare with the vehicle's speed  
+  - apply tolerance logic  
+  - return **OK** or **OVER_SPEED**  
+- Works in real-time and offline (no internet required)
+
+---
+
+## Requirements
+
+Install dependencies:
+
+```bash
+pip install pyrosm shapely pandas numpy scipy
