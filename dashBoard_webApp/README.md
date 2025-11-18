@@ -42,6 +42,11 @@ dashBoard_webApp/
 cd frontend
 npm install
 ```
+- if you encounter "Cannot find type definition file for estree TypeScript" error in the tsconfig.json file
+```bash
+npm install --save-dev @types/estree
+```
+then press Ctrl+Shift+P → "TypeScript: Restart TS Server"
 
 #### 2. Install Backend Dependencies
 
