@@ -5,12 +5,6 @@ out/
 .env.local
 .env.*.local
 
-# Backend (Node.js)
-backend/node_modules/
-backend/dist/
-backend/.env
-backend/.env.local
-
 # General
 node_modules/
 dist/
@@ -34,6 +28,39 @@ pnpm-lock.yaml (if using pnpm)
 *~
 
 # OS
+.DS_Store
+Thumbs.db
+
+# Build outputs
+.turbo/
+dist/
+build/
+
+# Added for Vite frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+frontend/.env.*.local
+frontend/*.tsbuildinfo
+
+# Added for Flask backend
+backend/__pycache__/
+backend/*.pyc
+backend/db.json
+backend/.env
+
+# Logs
+*.log
+*.log.*
+
+# Updated IDE settings
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS-specific files
 .DS_Store
 Thumbs.db
 
