@@ -1,11 +1,24 @@
-import { useEffect } from 'react';
-import { io } from 'socket.io-client';
+import { useEffect, useState } from "react";
+import { io } from "socket.io-client";
+
+// Define your type BEFORE using it
+interface DriverUpdate {
+  heartRate?: number;
+  facialExpression?: string;
+  audioLevel?: number;
+  drowsiness?: boolean;
+  intoxication?: boolean;
+  anger?: boolean;
+  // Add any other fields your backend sends
+}
 
 useEffect(() => {
-  const socket = io('http://localhost:5000');
+  const socket = io("http://localhost:5000");
   
-  const handleDriverUpdate = (data) => {
-    // Update your state with new data
+  const [driverData, setDriverData] = useState<DriverUpdate | null>(null);
+  
+  const handleDriverUpdate = (data: DriverUpdate) => {
+    setDriverData(data);  // Update state with incoming data
   };
   
   socket.on('driverUpdate', handleDriverUpdate);
