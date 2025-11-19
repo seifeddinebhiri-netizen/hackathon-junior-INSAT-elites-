@@ -9,10 +9,10 @@ import DashboardControls from './DashboardControls'
 
 export default function Dashboard() {
   return (
-    <div className="min-h-screen bg-white text-[#0f2048]">
+    <div className="min-h-screen bg-white dark:bg-[#0f2048] text-[#0f2048] dark:text-white">
       <DashboardHeader />
       
-      <main className="p-6 lg:p-8 animate-fade-in bg-[#f9fafb]">
+      <main className="p-6 lg:p-8 animate-fade-in bg-[#f9fafb] dark:bg-[#0f2048]">
         {/* Dashboard Controls */}
         <div className="animate-slide-up">
           <DashboardControls />
