@@ -10,6 +10,7 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
+    "@radix-ui/react-switch": "^1.2.6",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.454.0",
@@ -18,7 +19,8 @@
     "react-router-dom": "^6.20.0",
     "recharts": "^2.10.3",
     "socket.io-client": "^4.8.1",
-    "tailwind-merge": "^2.5.5"
+    "tailwind-merge": "^2.6.0",
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@types/estree": "^1.0.8",

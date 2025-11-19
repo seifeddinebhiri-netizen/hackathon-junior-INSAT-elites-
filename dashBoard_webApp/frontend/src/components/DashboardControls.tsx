@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Download, Settings, Calendar, User } from 'lucide-react'
+import { Download, Calendar, User } from 'lucide-react'
 
 export default function DashboardControls() {
   const [dateRange, setDateRange] = useState('5-weeks')
@@ -40,14 +40,6 @@ export default function DashboardControls() {
         >
           <Download className="w-4 h-4" />
           Export
-        </Button>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="flex items-center gap-2 hover:bg-[#0f2048] hover:text-white hover:border-[#0f2048] border-2 border-[#e5e7eb] text-[#0f2048] font-semibold transition-all"
-        >
-          <Settings className="w-4 h-4" />
-          Settings
         </Button>
       </div>
     </div>
