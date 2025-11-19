@@ -1,40 +1,40 @@
 ## UI/UX Redesign
 
-### Évolution de la version v1 vers v1.2
+### Evolution from v1 to v1.2
 
-#### 📊 Thème et Lisibilité
+#### 📊 Theme and Readability
 
-L'interface initiale utilisait un **thème sombre très contrasté**, avec des cartes denses et une hiérarchie visuelle moins évidente, ce qui rendait plus difficile la **lecture rapide des informations clés** du dashboard.
+The initial interface used a **high-contrast dark theme**, with dense cards and less obvious visual hierarchy, making it more difficult to **quickly read key information** on the dashboard.
 
-La nouvelle version adopte un **thème clair plus aéré**, avec davantage d'espace négatif et une structure de cartes mieux définie, ce qui améliore :
-- La **lisibilité globale** de l'interface
-- La **compréhension immédiate** du score de sécurité et de son évolution
-- Le contraste positif et la fluidité visuelle
+The new version adopts a **more spacious light theme**, with more negative space and a better-defined card structure, which improves:
+- Overall **interface readability**
+- **Immediate understanding** of the safety score and its evolution
+- Positive contrast and visual fluidity
 
-#### 🎨 Palette de Couleurs
+#### 🎨 Color Palette
 
-Le choix des couleurs n'est pas aléatoire mais **inspiré des trois couleurs du logo de Lloyd**, renforçant l'alignement visuel avec la marque assurantielle et créant une cohésion entre les produits.
+The color choices are not random but **inspired by the three colors of Lloyd's logo**, reinforcing visual alignment with the insurance brand and creating cohesion between products.
 
-#### ♿ Options d'Accessibilité
+#### ♿ Accessibility Options
 
-La v1.2 introduit un **panneau de personnalisation complet** pour répondre aux besoins divers des utilisateurs et améliorer l'accessibilité globale :
+v1.2 introduces a **comprehensive customization panel** to meet diverse user needs and improve overall accessibility:
 
-- **Thème clair/sombre** : Basculer entre les modes pour adapter l'interface aux préférences visuelles et conditions d'éclairage
-- **Contrôle des animations** : Désactiver les transitions et effets animés pour réduire les distractions et améliorer les performances
-- **Ajustement de la taille de police** : Personnaliser la lisibilité du texte selon les besoins de confort visuel
-- **Sélection de langue** : Support multilingue pour une utilisation internationale
-- **Personnalisation du profil** : Adapter l'interface aux préférences individuelles de chaque conducteur
+- **Light/dark theme**: Switch between modes to adapt the interface to visual preferences and lighting conditions
+- **Animation control**: Disable transitions and animated effects to reduce distractions and improve performance
+- **Font size adjustment**: Customize text readability according to visual comfort needs
+- **Language selection**: Multilingual support for international use
+- **Profile customization**: Adapt the interface to individual preferences of each driver
 
-#### ✨ Impacts Clés
+#### ✨ Key Impacts
 
-| Aspect | Amélioration |
+| Aspect | Improvement |
 |--------|-------------|
-| **Contraste** | Passage d'un thème sombre dense à une interface claire avec plus d'espace et de contraste positif |
-| **Hiérarchie** | Meilleure structuration des informations clés (score, tendance, alertes, profil) |
-| **Accessibilité** | Cartes mieux séparées, éléments visuels plus distincts, et options de personnalisation complètes |
-| **Inclusivité** | Paramètres adaptables pour répondre aux besoins visuels et préférences utilisateurs diversifiés |
-| **Expérience** | Interface moderne et professionnelle, orientée analytics et gestion de risque en temps réel |
+| **Contrast** | Shift from dense dark theme to clean interface with more space and positive contrast |
+| **Hierarchy** | Better structuring of key information (score, trend, alerts, profile) |
+| **Accessibility** | Better separated cards, more distinct visual elements, and comprehensive customization options |
+| **Inclusivity** | Adaptable settings to meet diverse visual needs and user preferences |
+| **Experience** | Modern and professional interface, oriented toward analytics and real-time risk management |
 
-#### 🎯 Résultat Final
+#### 🎯 Final Result
 
-Une **expérience utilisateur plus moderne, professionnelle et inclusive**, parfaitement alignée avec un dashboard d'analytics orienté **assurance et gestion de risque en temps réel**, tout en garantissant une accessibilité optimale pour tous les utilisateurs.
+A **more modern, professional, and inclusive user experience**, perfectly aligned with an analytics dashboard focused on **insurance and real-time risk management**, while ensuring optimal accessibility for all users.
