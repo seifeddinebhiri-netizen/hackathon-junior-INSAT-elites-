@@ -42,11 +42,6 @@ dashBoard_webApp/
 cd frontend
 npm install
 ```
-- if you encounter "Cannot find type definition file for estree TypeScript" error in the tsconfig.json file
-```bash
-npm install --save-dev @types/estree
-```
-then press Ctrl+Shift+P → "TypeScript: Restart TS Server"
 
 #### 2. Install Backend Dependencies
 
@@ -159,6 +154,19 @@ PORT=5000
 ```
 
 ## 🐛 Troubleshooting
+
+**if you encounter "can't find the Switch component module" error in the settings.tsx file**
+```bash
+npx shadcn@latest add switch
+```
+![terminal_screenshot](frontend/screenshots/help/settings_tsx_error.png)
+
+
+**if you encounter "Cannot find type definition file for estree TypeScript" error in the tsconfig.json file**
+```bash
+npm install --save-dev @types/estree
+```
+then press Ctrl+Shift+P → "TypeScript: Restart TS Server"
 
 **Port already in use:**
 - Change the port in `app.py` (line: `socketio.run(app, port=5000)`)
