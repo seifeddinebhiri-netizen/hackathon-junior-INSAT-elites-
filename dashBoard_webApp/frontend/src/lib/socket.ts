@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
-import { io } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 
 // Define your type BEFORE using it
-interface DriverUpdate {
+export interface DriverUpdate {
   heartRate?: number;
   facialExpression?: string;
   audioLevel?: number;
@@ -12,19 +11,14 @@ interface DriverUpdate {
   // Add any other fields your backend sends
 }
 
-useEffect(() => {
-  const socket = io("http://localhost:5000");
-  
-  const [driverData, setDriverData] = useState<DriverUpdate | null>(null);
-  
-  const handleDriverUpdate = (data: DriverUpdate) => {
-    setDriverData(data);  // Update state with incoming data
-  };
-  
-  socket.on('driverUpdate', handleDriverUpdate);
-  
-  return () => {
-    socket.off('driverUpdate', handleDriverUpdate);
-    socket.disconnect();
-  };
-}, []);
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:5000'
+
+/**
+ * Creates a socket connection to the backend
+ * @returns Socket instance
+ */
+export function createSocket(): Socket {
+  return io(API_BASE_URL, {
+    transports: ['websocket'],
+  })
+}

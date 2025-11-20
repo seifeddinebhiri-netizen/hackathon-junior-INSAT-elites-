@@ -1,10 +1,58 @@
+import { useEffect, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { TrendingUp, CheckCircle2, Award } from 'lucide-react'
 
+interface SafetyScoreResponse {
+  score: number
+  risk: string
+  lastUpdated?: string
+}
+
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:5000'
+
+const getDiscountFromScore = (score: number) => {
+  if (score >= 90) return '+10%'
+  if (score >= 75) return '+8%'
+  if (score >= 60) return '+5%'
+  return '+0%'
+}
+
 export default function SafetyMetrics() {
-  const safetyScore = 87
-  const riskLevel = 'Low Risk'
-  const discount = '+8%'
+  const [scoreData, setScoreData] = useState<SafetyScoreResponse>({
+    score: 87,
+    risk: 'Low Risk',
+    lastUpdated: ''
+  })
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchScore = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/safety-score`)
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        const payload = await response.json()
+        setScoreData(payload)
+        setError(null)
+      } catch (err) {
+        console.error('Error fetching safety score:', err)
+        setError('Unable to load score')
+        // Keep default values on error
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchScore()
+    const interval = setInterval(fetchScore, 10000) // Refresh every 10 seconds
+    return () => clearInterval(interval)
+  }, [])
+
+  const safetyScore = scoreData.score ?? 87
+  const riskLevel = error ? 'Unavailable' : (scoreData.risk || 'Low Risk')
+  const discount = getDiscountFromScore(safetyScore)
   const circumference = 2 * Math.PI * 45
   const offset = circumference - (safetyScore / 100) * circumference
 
@@ -50,7 +98,9 @@ export default function SafetyMetrics() {
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <div className="text-4xl font-bold text-[#0f2048]">{safetyScore}</div>
+            <div className="text-4xl font-bold text-[#0f2048]">
+              {loading ? '...' : safetyScore}
+            </div>
             <span className="text-xs text-[#6b7280]">/100</span>
           </div>
         </div>
@@ -83,7 +133,16 @@ export default function SafetyMetrics() {
       {/* Status */}
       <div className="pt-4 border-t-2 border-[#e5e7eb] flex items-center gap-2">
         <CheckCircle2 className="w-5 h-5 text-[#0f2048] flex-shrink-0" />
-        <p className="text-sm text-[#0f2048] font-semibold">Eligible for premium reduction</p>
+        <div className="flex-1">
+          <p className="text-sm text-[#0f2048] font-semibold">
+            {error ? 'Connection issue' : 'Eligible for premium reduction'}
+          </p>
+          {!loading && !error && scoreData.lastUpdated && (
+            <p className="text-xs text-[#6b7280] mt-1">
+              Updated {new Date(scoreData.lastUpdated).toLocaleTimeString()}
+            </p>
+          )}
+        </div>
       </div>
     </Card>
   )

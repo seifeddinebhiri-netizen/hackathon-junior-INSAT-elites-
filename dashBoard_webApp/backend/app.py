@@ -30,6 +30,50 @@ def write_db(data):
     with open(DB_FILE, 'w') as f:
         json.dump(data, f, indent=2)
 
+def _parse_timestamp(value):
+    """Safely parse ISO timestamps"""
+    try:
+        return datetime.fromisoformat(value)
+    except (TypeError, ValueError):
+        return datetime.min
+
+def _risk_from_score(score):
+    """Return risk label based on score"""
+    if score >= 80:
+        return 'Low Risk'
+    if score >= 50:
+        return 'Medium Risk'
+    return 'High Risk'
+
+def calculate_safety_score():
+    """Compute latest safety score from database"""
+    db_data = read_db()
+    entries = db_data.get('data', [])
+
+    latest_summary = None
+    for entry in entries:
+        values = entry.get('values', {})
+        if isinstance(values, dict) and 'safety_score' in values:
+            if latest_summary is None or _parse_timestamp(entry.get('timestamp')) > _parse_timestamp(latest_summary.get('timestamp')):
+                latest_summary = entry
+
+    if latest_summary:
+        raw_score = latest_summary.get('values', {}).get('safety_score', 0)
+        score = max(0, min(100, int(raw_score)))
+        risk = latest_summary.get('values', {}).get('risk_category') or _risk_from_score(score)
+        last_updated = latest_summary.get('timestamp')
+    else:
+        incident_count = sum(1 for entry in entries if entry.get('type') == 'incident')
+        score = max(0, 100 - incident_count)
+        risk = _risk_from_score(score)
+        last_updated = datetime.now().isoformat()
+
+    return {
+        'score': score,
+        'risk': risk,
+        'lastUpdated': last_updated
+    }
+
 # REST API Routes
 @app.route('/', methods=['GET'])
 def index():
@@ -126,6 +170,15 @@ def get_stats():
             'averages': averages
         })
         
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/safety-score', methods=['GET'])
+def get_safety_score_route():
+    """Provide the latest safety score derived from stored data"""
+    try:
+        score_payload = calculate_safety_score()
+        return jsonify(score_payload)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
